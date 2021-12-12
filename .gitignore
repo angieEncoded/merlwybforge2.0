@@ -1,0 +1,5 @@
+.env
+node_modules
+archives
+creds.md
+logs
