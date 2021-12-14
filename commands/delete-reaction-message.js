@@ -15,18 +15,22 @@ const deletereactionmessage = {
 
             // return from the interaction if the user doesn't have the admin role
             if (!interaction.member.roles.cache.some(role => role.name === process.env.DISCORDADMIN)) {
-                interaction.reply({
-                    content: "Only an admin can do this."
-                })
-                setTimeout(() => {
-                    interaction.deleteReply();
-                }, 10000);
+                interaction.reply({ content: "Only an admin can do this." })
+                setTimeout(() => { interaction.deleteReply(); }, 10000);
                 return;
             }
+
+            // get the guild
+            const guildId = interaction.guild.id
+
+            // run the preflight check to clean out any items that might have been deleted manually by the discord admin
+            await preflightDelete(guildId, interaction);
+
 
             // Get the message ID from the interaction and details about the requesting user for the logs
             const messageId = interaction.options.getString('messageid');
             // console.log(messageId)
+
             const user = {
                 id: interaction.member.user.id,
                 username: `${interaction.member.user.username}#${interaction.member.user.discriminator}`
