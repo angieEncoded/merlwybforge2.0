@@ -25,7 +25,7 @@ export const preflightDelete = async (guildId, interaction) => {
         } catch (error) {
             // If we got to this api error we know the message doesn't exist and we can delete it from the database
             if (error instanceof DiscordAPIError) {
-                console.log(databaseItem.id)
+                // console.log(databaseItem.id)
                 await ReactionMessage.deleteMessageById(databaseItem.id);
             } else {
                 // Then something we didn't expect happened.

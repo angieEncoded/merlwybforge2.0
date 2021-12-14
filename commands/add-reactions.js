@@ -32,8 +32,8 @@ const addreaction = {
             await preflightDelete(guildId, interaction)
 
             // Check that the reaction-roles channel exists or whatever channel the user specified
-            const channelname = await interaction.options.getString('roleschannel') || "reaction-roles";
-            const reactionsChannel = await interaction.guild.channels.cache.find(channel => channel.name === channelname);
+            const channelName = await interaction.options.getString('roleschannel') || "reaction-roles";
+            const reactionsChannel = await interaction.guild.channels.cache.find(channel => channel.name === channelName);
             // console.log(reactionsChannel)
             if (!reactionsChannel) {
                 interaction.reply({ content: "That isn't a valid channel" })
@@ -129,13 +129,20 @@ const addreaction = {
         } catch (error) {
             // If the message doesn't exist we hit an api error which is interesting - it doesn't just return undefined
             if (error instanceof DiscordAPIError) {
-                interaction.reply({ content: "That isn't a valid message or channel." })
-                setTimeout(() => { interaction.deleteReply(); }, 10000);
-                logger.log({ level: 'error', message: error });
-                return;
+                if (error.stack.includes("Missing Access")) {
+                    interaction.reply({ content: `I don't have permissions to post in that channel. Please ensure I have the roles and permissions I need to create messages and react to them.` })
+                    setTimeout(() => { interaction.deleteReply(); }, 10000);
+                    return;
+                }
+                if (error.stack.includes("Unknown Message")) {
+                    interaction.reply({ content: `I can't find that message. Please specify the channel if it's not in reaction-roles` })
+                    setTimeout(() => { interaction.deleteReply(); }, 10000);
+                    return;
+                }
             }
+
             logger.log({ level: 'error', message: error });
-            interaction.reply({ content: `Something bad happened... I have logged it for <@${process.env.ADMIN}>` })
+            interaction.reply({ content: `Something happened that I wasn't expecting... I have logged it for <@${process.env.ADMIN}>` })
             setTimeout(() => { interaction.deleteReply(); }, 10000);
         }
     },

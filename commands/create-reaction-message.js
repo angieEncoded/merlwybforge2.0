@@ -75,12 +75,16 @@ const react = {
                 ephemeral: true
             })
         } catch (error) {
-            interaction.reply({
-                content: `Something bad happened... I have logged it for <@${process.env.ADMIN}>`
-            })
-            setTimeout(() => {
-                interaction.deleteReply();
-            }, 10000);
+            if (error instanceof DiscordAPIError) {
+                if (error.stack.includes("Missing Access")) {
+                    interaction.reply({ content: `I don't have permissions to post in that channel. Please ensure I have the roles and permissions I need to create messages and react to them.` })
+                    setTimeout(() => { interaction.deleteReply(); }, 10000);
+                }
+                return;
+            }
+
+            interaction.reply({ content: `Something happened that I wasn't expecting... I have logged it for <@${process.env.ADMIN}>` })
+            setTimeout(() => { interaction.deleteReply(); }, 10000);
             logger.log({ level: 'error', message: error });
             return;
         }
