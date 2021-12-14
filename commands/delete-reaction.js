@@ -1,9 +1,9 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
 import { DiscordAPIError, MessageEmbed } from 'discord.js';
-import Reaction from "../models/Reaction.js"
-import logger from '../util/logging.js';
-import ReactionMessage from "../models/ReactionMessage.js"
 
+import Reaction from "../models/Reaction.js"
+import ReactionMessage from "../models/ReactionMessage.js"
+import { SlashCommandBuilder } from '@discordjs/builders'
+import logger from '../util/logging.js';
 
 const deleteReaction = {
     data: new SlashCommandBuilder()
@@ -23,6 +23,13 @@ const deleteReaction = {
                 return;
             }
 
+            // Grab the guildId for later stuff
+            const guildId = interaction.guild.id
+
+            // run the preflight delete to clean up messages that no longer exist in the database
+            await preflightDelete(guildId, interaction)
+
+
             // Check that the reaction-roles channel exists or whatever channel the user specified
             const channelname = await interaction.options.getString('roleschannel') || "reaction-roles";
             const reactionsChannel = await interaction.guild.channels.cache.find(channel => channel.name === channelname);
@@ -31,7 +38,6 @@ const deleteReaction = {
             const messageId = await interaction.options.getString('messageid');
             const messageToEdit = await reactionsChannel.messages.fetch(messageId)
             const reaction = await interaction.options.getString('existingreaction');
-            const guildId = interaction.guild.id
 
 
             // If it's a custom emoji we need to strip its id
