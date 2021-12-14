@@ -1,5 +1,5 @@
 import { DiscordAPIError, MessageEmbed } from 'discord.js';
-
+import { preflightDelete } from "../util/preflightDelete.js"
 import Reaction from "../models/Reaction.js"
 import ReactionMessage from "../models/ReactionMessage.js"
 import { SlashCommandBuilder } from '@discordjs/builders'

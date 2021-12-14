@@ -1,4 +1,6 @@
 import ReactionMessage from '../models/ReactionMessage.js';
+import { preflightDelete } from "../util/preflightDelete.js"
+import { DiscordAPIError } from "discord.js"
 import { SlashCommandBuilder } from '@discordjs/builders'
 import logger from '../util/logging.js'
 
@@ -83,12 +85,8 @@ const deletereactionmessage = {
         } catch (error) {
             // If the message doesn't exist we hit an api error which is interesting - it doesn't just return undefined
             if (error instanceof DiscordAPIError) {
-                interaction.reply({
-                    content: "That isn't a valid message or channel."
-                })
-                setTimeout(() => {
-                    interaction.deleteReply();
-                }, 10000);
+                interaction.reply({ content: "That isn't a valid message or channel." })
+                setTimeout(() => { interaction.deleteReply(); }, 10000);
                 logger.log({ level: 'error', message: error });
                 return;
             }
