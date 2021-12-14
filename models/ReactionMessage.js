@@ -46,12 +46,20 @@ export default class ReactionMessage {
         return db.execute(`select * from reaction_messages where message_id = ? `, [messageId])
     }
 
-    static deleteMessageById(messageId) {
+    static deleteMessageByMessageId(messageId) {
         return db.execute("delete from reaction_messages where message_id = ?", [messageId])
+    }
+
+    static deleteMessageById(id) {
+        return db.execute("delete from reaction_messages where id = ?", [id])
     }
 
     static fetchNotesById(messageId) {
         return db.execute("select notes from reaction_messages where message_id = ?", [messageId])
+    }
+
+    static fetchAllMessagesByGuildId(guildId) {
+        return db.execute("select * from reaction_messages where guild_id = ?", [guildId])
     }
 
 };

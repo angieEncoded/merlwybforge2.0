@@ -1,7 +1,9 @@
-import { MessageEmbed } from 'discord.js'
+import { DiscordAPIError, MessageEmbed } from 'discord.js'
+
 import ReactionMessage from '../models/ReactionMessage.js';
 import { SlashCommandBuilder } from '@discordjs/builders'
 import logger from '../util/logging.js';
+import { preflightDelete } from "../util/preflightDelete.js"
 import { v4 as uuidv4 } from 'uuid';
 
 const react = {
@@ -16,12 +18,19 @@ const react = {
     async execute(interaction) {
 
         try {
+
             // return from the interaction if the user doesn't have the admin role
             if (!interaction.member.roles.cache.some(role => role.name === process.env.DISCORDADMIN)) {
                 interaction.reply({ content: "Only an admin can do this." })
                 setTimeout(() => { interaction.deleteReply(); }, 10000);
                 return;
             }
+
+            // get the guild
+            const guildId = interaction.guild.id
+
+            // run the preflight check to clean out any items that might have been deleted manually by the discord admin
+            await preflightDelete(guildId, interaction);
 
             // Make sure that the channel exists before we do anything else
             const channelname = interaction.options.getString('channelname') || "reaction-roles";
@@ -39,7 +48,6 @@ const react = {
             const notes = interaction.options.getString('messagenotes') || "React below to obtain a role.";
             const user = interaction.user.tag;
             const currentChannel = interaction.channel.id;
-            const guildId = interaction.guild.id
             const channelId = results.id;
             const uuid = uuidv4();
 

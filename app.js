@@ -1,6 +1,7 @@
 import DiscordJS from 'discord.js'
 import dotenv from 'dotenv'
 import fs from 'fs'
+
 dotenv.config()
 
 // Tell Discord what we intend to do with the bot

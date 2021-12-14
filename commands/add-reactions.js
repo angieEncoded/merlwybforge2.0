@@ -1,10 +1,11 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
 import { DiscordAPIError, MessageEmbed } from 'discord.js';
-import { v4 as uuidv4 } from 'uuid';
-import Reaction from "../models/Reaction.js"
-import logger from '../util/logging.js';
-import ReactionMessage from "../models/ReactionMessage.js"
 
+import Reaction from "../models/Reaction.js"
+import ReactionMessage from "../models/ReactionMessage.js"
+import { SlashCommandBuilder } from '@discordjs/builders'
+import logger from '../util/logging.js';
+import { preflightDelete } from "../util/preflightDelete.js"
+import { v4 as uuidv4 } from 'uuid';
 
 const addreaction = {
     data: new SlashCommandBuilder()
@@ -24,6 +25,11 @@ const addreaction = {
                 setTimeout(() => { interaction.deleteReply(); }, 10000);
                 return;
             }
+            // Grab the guildId for later stuff
+            const guildId = interaction.guild.id
+
+            // run the preflight delete to clean up messages that no longer exist in the database
+            await preflightDelete(guildId, interaction)
 
             // Check that the reaction-roles channel exists or whatever channel the user specified
             const channelname = await interaction.options.getString('roleschannel') || "reaction-roles";
@@ -41,12 +47,12 @@ const addreaction = {
             const messageToEdit = await reactionsChannel.messages.fetch(messageId)
             const role = await interaction.options.getRole('role');
             const reaction = await interaction.options.getString('reaction');
-            const guildId = interaction.guild.id
+
 
             // check that we don't already have too many items - 20 is the max
             const [[numberOfCurrentReactions]] = await Reaction.fetchNumberOfItems(messageId)
             if (numberOfCurrentReactions.count >= 20) {
-                interaction.reply("That message has hit the Discord limit for reactions. We are only allowed to have 20 unique reactions.")
+                interaction.reply("That message has hit the Discord limit for reactions. We are only allowed to have 20 unique reactions per message.")
                 setTimeout(() => { interaction.deleteReply(); }, 10000);
                 return;
             }

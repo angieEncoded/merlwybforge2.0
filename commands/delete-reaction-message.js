@@ -1,6 +1,6 @@
+import ReactionMessage from '../models/ReactionMessage.js';
 import { SlashCommandBuilder } from '@discordjs/builders'
 import logger from '../util/logging.js'
-import ReactionMessage from '../models/ReactionMessage.js';
 
 const deletereactionmessage = {
     data: new SlashCommandBuilder()
@@ -60,7 +60,7 @@ const deletereactionmessage = {
             }
 
             // delete the message from the database (the reactions will cascade)
-            await ReactionMessage.deleteMessageById(messageId);
+            await ReactionMessage.deleteMessageByMessageId(messageId);
 
             // Delete the target message
             const messageToDelete = await reactionsChannel.messages.fetch(messageId)

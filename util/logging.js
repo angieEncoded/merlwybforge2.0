@@ -30,11 +30,11 @@ const logger = winston.createLogger({
 	),
 	defaultMeta: { service: 'MerlwybSenpaiDiscordBot' },
 	transports: [ // transport caught errors
-		// new winston.transports.Console(),
+		new winston.transports.Console(),
 		transportToFile,
 	],
 	exceptionHandlers: [ // catch uncaught exceptions
-		// new winston.transports.Console(),
+		new winston.transports.Console(),
 		transportToFile
 	]
 })
