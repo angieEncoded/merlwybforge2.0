@@ -16,6 +16,8 @@ const react = {
 
 
     async execute(interaction) {
+        let newMessage = ""; // Bring this outside in case we have an error and have to delete the message
+
 
         try {
 
@@ -26,7 +28,7 @@ const react = {
                 return;
             }
 
-            // get the guild
+            // get the guild id for preflight
             const guildId = interaction.guild.id
 
             // run the preflight check to clean out any items that might have been deleted manually by the discord admin
@@ -58,7 +60,7 @@ const react = {
                 .setDescription(notes)
 
             // Send the initial message into the channel with channelId
-            const newMessage = await results.send({ embeds: [success] })
+            newMessage = await results.send({ embeds: [success] })
             // console.log(newMessage.id)
 
             // Save the data to a new record in the database and return the id of the record to the user
@@ -67,10 +69,11 @@ const react = {
             const [messageID] = await discordMessage.save()
             // console.log(messageID)
 
+
             // Report to the user that it's completed
             await interaction.deferReply({ ephemeral: true })
             await interaction.editReply({
-                content: `I've successfully deployed the message in the reaction roles channel. Your message id is ${newMessage.id}. In order to set up reaction roles use the below command and fill in the reaction options:\n
+                content: `I've successfully deployed the message in the ${channelname} channel. Your message id is ${newMessage.id}. In order to set up reaction roles use the below command and fill in the reaction options:\n
              \`\`\`/add-reactions\`\`\``,
                 ephemeral: true
             })
@@ -83,9 +86,20 @@ const react = {
                 return;
             }
 
+            // Database error coming back
+            if (error.code && error.code === "ER_DATA_TOO_LONG") {
+                interaction.reply({ content: `You have hit the character limit built into my database, remember that I still have to add reactions to my notes.` })
+                setTimeout(() => { interaction.deleteReply(); }, 10000);
+                logger.log({ level: 'error', message: error });
+                // we are already getting back an instance of the message, just delete it
+                newMessage.delete()
+                return;
+            }
+
             interaction.reply({ content: `Something happened that I wasn't expecting... I have logged it for <@${process.env.ADMIN}>` })
-            setTimeout(() => { interaction.deleteReply(); }, 10000);
+            // setTimeout(() => { interaction.deleteReply(); }, 10000);
             logger.log({ level: 'error', message: error });
+            newMessage.delete() // if we hit an error, something happened we can't continue delete the message
             return;
         }
     }
